@@ -1,27 +1,30 @@
 import numpy as np
-from pathlib import Path
-from typing import Tuple, List
+from typing import Tuple
 from pandas import read_csv, DataFrame
 from sklearn.model_selection import train_test_split
-from definitions import __SEIZURE_PATH, __MNIST_PATH
+from definitions import __SEIZURE_PATH, __MNIST_PATH, __WALL_FOLLOWING_PATH
 
 Dataset = Tuple[np.ndarray, np.ndarray]
 
 
-def _get_mnist_labels() -> List[str]:
+def load_wall_following() -> Dataset:
     """
-    Creates labels for the mnist dataset attributes.
+    Loads the robot wall following dataset.
 
-    :return: List of strings containing the labels.
+    :return: Tuple of numpy arrays containing the robot wall following dataset x and y.
     """
-    # Create a list with the prediction label's name.
-    names = ['number']
+    # Read the dataset and get its values.
+    dataset = read_csv(__WALL_FOLLOWING_PATH, engine='python')
 
-    # For every pixel, create a label containing the word 'pixel', followed by its index.
-    for i in range(784):
-        names.append('pixel' + str(i))
+    # Get x and y.
+    x = dataset.iloc[:, :-1].values
+    y = dataset.iloc[:, -1].values
 
-    return names
+    from sklearn import preprocessing
+    le = preprocessing.LabelEncoder()
+    y = le.fit_transform(y)
+
+    return x, y
 
 
 def load_digits() -> Dataset:
@@ -90,5 +93,21 @@ def get_eeg_name(class_num) -> str:
         3: 'Healthy cells',
         4: 'Cancer cells',
         5: 'Epileptic seizure'
+    }
+    return class_names.get(class_num, 'Invalid')
+
+
+def get_wall_following_name(class_num) -> str:
+    """
+    Return the name of the turn corresponding to the given index.
+
+    :param class_num: the index of the turn class.
+    :return: The turn's class name.
+    """
+    class_names = {
+        0: 'Move Forward',
+        1: 'Sharp Right Turn',
+        2: 'Slight Left Turn',
+        3: 'Slight Right Turn'
     }
     return class_names.get(class_num, 'Invalid')

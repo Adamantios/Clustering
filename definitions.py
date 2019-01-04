@@ -19,6 +19,9 @@ DATASET_SEIZURE = 'eeg.csv'
 # The mnist train dataset's filename.
 DATASET_MNIST = 'mnist.csv'
 
+# The robot wall following dataset's filename.
+DATASET_WALL_FOLLOWING = 'wall_following.csv'
+
 """ ----------------------------------------------------------------- """
 
 """ ------------------------- Do not modify. -------------------------"""
@@ -33,6 +36,9 @@ __SEIZURE_PATH = join(__ROOT, DATASETS, DATASET_SEIZURE)
 
 # The path to the seizure detection train dataset.
 __MNIST_PATH = join(__ROOT, DATASETS, DATASET_MNIST)
+
+# The path to the seizure detection train dataset.
+__WALL_FOLLOWING_PATH = join(__ROOT, DATASETS, DATASET_WALL_FOLLOWING)
 
 # Check plotting mode.
 if PLOTTING_MODE != 'show' and PLOTTING_MODE != 'save' and PLOTTING_MODE != 'both':
