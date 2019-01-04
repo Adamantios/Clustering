@@ -14,10 +14,10 @@ OUT_DIR_NAME = 'out'
 DATASETS = 'datasets'
 
 # The seizure detection dataset's filename.
-DATASET_SEIZURE = 'epileptic_seizure.csv'
+DATASET_SEIZURE = 'eeg.csv'
 
 # The mnist train dataset's filename.
-DATASET_MNIST = 'mnist_train.csv'
+DATASET_MNIST = 'mnist.csv'
 
 """ ----------------------------------------------------------------- """
 
