@@ -68,9 +68,7 @@ def cluster(x: np.ndarray) -> np.ndarray:
     :return: the clustering labels.
     """
     logger.log('Creating model...')
-    clustering = SpectralClustering(n_clusters=2,
-                                    assign_labels="discretize",
-                                    random_state=0)
+    clustering = SpectralClustering(n_clusters=2, assign_labels="discretize", random_state=0)
     logger.log('Applying Spectral Clustering with params: \n{}'.format(clustering.get_params()))
 
     logger.log('Fitting...')
