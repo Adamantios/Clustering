@@ -5,11 +5,10 @@ from sklearn.cluster import SpectralClustering
 from sklearn.manifold import SpectralEmbedding
 from sklearn import metrics
 from definitions import SAVE_PRED_RESULTS, PLOTTING_MODE
+from helpers.preprocessing import cut_images
 from typing import Tuple
 
 # Create a logger.
-from helpers.preprocessing import cut_images
-
 logger = helpers.Logger(folder='logs', filename='seizure_detection')
 
 # If plots are enabled, create a plotter.
