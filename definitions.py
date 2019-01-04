@@ -3,7 +3,8 @@ from os.path import dirname, abspath, join
 """------------------------- Can be modified. ------------------------"""
 
 # The project's plotting mode. It can be 'save', 'show', 'both' or 'none'.
-PLOTTING_MODE = 'show'
+# TODO change to show.
+PLOTTING_MODE = 'both'
 
 # Whether predictions should be saved as an excel file or not.
 SAVE_PRED_RESULTS = False
