@@ -40,6 +40,8 @@ def preprocess(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     logger.log('\tScaling data...')
     x = x / 255
 
+    # Cut a part of the images background.
+    logger.log('\tCutting images...')
     x = cut_images(x)
 
     # Apply spectral embedding.
