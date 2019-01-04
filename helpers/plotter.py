@@ -43,7 +43,7 @@ class Plotter:
             self._save_path = join(self._folder, self.subfolder, filename)
             fig.savefig(self._save_path)
 
-        if self.mode == 'show':
+        if self.mode == 'show' or self.mode == 'both':
             plt.show()
 
     def reset_params(self):
