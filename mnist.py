@@ -9,7 +9,7 @@ from helpers.preprocessing import cut_images
 from typing import Tuple
 
 # Create a logger.
-logger = helpers.Logger(folder='logs', filename='seizure_detection')
+logger = helpers.Logger(folder='logs', filename='mnist')
 
 # If plots are enabled, create a plotter.
 if PLOTTING_MODE != 'none':
