@@ -13,14 +13,15 @@ class TooManyDimensionsError(Exception):
 
 class Plotter:
     def __init__(self, folder: str = 'plots', mode: str = 'show'):
-        # Create a folder for the plots.
-        self._folder = create_folder(folder)
-
         # Get plotter's mode and check it's value.
         self.mode = mode
         if self.mode != 'show' and self.mode != 'save' and self.mode != 'both':
             raise ValueError('Plotter\'s mode can be \'save\', \'show\' or \'both\'.\nGot {} instead.'
                              .format(self.mode))
+
+        # Create a folder for the plots, if needed.
+        if self.mode == 'save' or self.mode == 'both':
+            self._folder = create_folder(folder)
 
         self.subfolder: str = ''
         self.suptitle: str = ''
