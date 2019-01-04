@@ -31,7 +31,7 @@ def load_digits() -> Dataset:
     :return: Tuple of numpy arrays containing the mnist handwritten digits x and y.
     """
     # Read the dataset and get its values.
-    dataset = read_csv(__MNIST_PATH, names=_get_mnist_labels())
+    dataset = read_csv(__MNIST_PATH, engine='python', names=_get_mnist_labels())
 
     # Get x and y.
     x = dataset.iloc[:, 1:].values
