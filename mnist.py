@@ -38,7 +38,7 @@ def preprocess(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
     # Scale data.
     logger.log('\tScaling data...')
-    x /= 255
+    x = x / 255
 
     x = cut_images(x)
 
