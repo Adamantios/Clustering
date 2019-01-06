@@ -222,8 +222,8 @@ class Plotter:
 
         # Create colors for the plots.
         colors = itertools.cycle(
-            ['red', 'dimgrey', 'lightcoral', 'yellowgreen', 'cyan', 'lightsalmon', 'violet', 'pink', 'lawngreen',
-             'darkorange'])
+            ['#fff100', '#ff8c00', '#e81123', '#ec008c', '#68217a', '#00188f', '#00bcf2', '#00b294', '#009e49',
+             '#bad80a'])
 
         centroid_colors = itertools.cycle(
             ['darkred', 'black', 'rosybrown', 'olivedrab', 'darkcyan', 'orangered', 'purple', 'crimson', 'darkseagreen',
