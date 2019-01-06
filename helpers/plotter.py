@@ -1,3 +1,4 @@
+import itertools
 import random
 import numpy as np
 from os.path import join
@@ -186,13 +187,16 @@ class Plotter:
 
         self._save_and_show(fig)
 
-    def scatter(self, x: np.ndarray, y: np.ndarray, class_labels: Callable[[int], str] = None) -> None:
+    def scatter(self, x: np.ndarray, y: np.ndarray, class_labels: Callable[[int], str] = None,
+                clustering: bool = False, centroids: np.ndarray = None) -> None:
         """
         Plots and saves a scatterplot with the first one, two or three features.
 
         :param x: the features to plot.
         :param y: the class labels.
         :param class_labels: an optional function which gets the class labels from their indexes.
+        :param clustering: whether it is after clustering or not.
+        :param centroids: the centroids of the clustering.
         """
         if class_labels is None:
             def class_labels(index: int): return index
@@ -216,6 +220,15 @@ class Plotter:
         # Get the class labels and count each label's instances.
         labels, counts = np.unique(y, return_counts=True)
 
+        # Create colors for the plots.
+        colors = itertools.cycle(
+            ['red', 'dimgrey', 'lightcoral', 'yellowgreen', 'cyan', 'lightsalmon', 'violet', 'pink', 'lawngreen',
+             'darkorange'])
+
+        centroid_colors = itertools.cycle(
+            ['darkred', 'black', 'rosybrown', 'olivedrab', 'darkcyan', 'orangered', 'purple', 'crimson', 'darkseagreen',
+             'tan'])
+
         # If there is one pc, plot 1D.
         if x.shape[1] == 1:
             # Create an ax.
@@ -223,8 +236,17 @@ class Plotter:
 
             # For every class, scatter it's principal components.
             for i, count in zip(labels, counts):
-                ax.scatter(x[y == i, 0], np.zeros((count, 1)), alpha=0.5,
-                           label='{} class'.format(class_labels(i)))
+                if clustering:
+                    label = 'Cluster {}'.format(class_labels(i))
+                else:
+                    label = '{} class'.format(class_labels(i))
+
+                ax.scatter(x[y == i, 0], np.zeros((count, 1)), alpha=0.5, label=label, color=next(colors))
+
+                if centroids is not None:
+                    ax.scatter(centroids[i], 0, alpha=0.5, color=next(centroid_colors))
+                    ax.text(centroids[i][0], centroids[i][1], 'Centroid')
+
                 ax.legend()
 
             ax.set_title(self.title)
@@ -240,7 +262,17 @@ class Plotter:
 
             # For every class, scatter it's principal components.
             for i, count in zip(labels, counts):
-                ax.scatter(x[y == i, 0], x[y == i, 1], alpha=0.5, label='{} class'.format(class_labels(i)))
+                if clustering:
+                    label = 'Cluster {}'.format(class_labels(i))
+                else:
+                    label = '{} class'.format(class_labels(i))
+
+                ax.scatter(x[y == i, 0], x[y == i, 1], alpha=0.5, label=label, color=next(colors))
+
+                if centroids is not None:
+                    ax.scatter(centroids[i][0], centroids[i][1], alpha=0.5, color=next(centroid_colors))
+                    ax.text(centroids[i][0], centroids[i][1], 'Centroid')
+
                 ax.legend()
 
             ax.set_title(self.title)
