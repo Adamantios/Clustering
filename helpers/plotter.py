@@ -237,7 +237,7 @@ class Plotter:
             # For every class, scatter it's principal components.
             for i, count in zip(labels, counts):
                 if clustering:
-                    label = 'Cluster {}'.format(class_labels(i))
+                    label = 'Cluster {}'.format(i)
                 else:
                     label = '{} class'.format(class_labels(i))
 
@@ -263,7 +263,7 @@ class Plotter:
             # For every class, scatter it's principal components.
             for i, count in zip(labels, counts):
                 if clustering:
-                    label = 'Cluster {}'.format(class_labels(i))
+                    label = 'Cluster {}'.format(i)
                 else:
                     label = '{} class'.format(class_labels(i))
 
