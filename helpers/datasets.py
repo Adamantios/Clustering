@@ -1,8 +1,11 @@
+from pathlib import Path
+
 import numpy as np
-from typing import Tuple
+from typing import Tuple, List
 from pandas import read_csv, DataFrame
 from sklearn.model_selection import train_test_split
-from definitions import __SEIZURE_PATH, __MNIST_PATH, __WALL_FOLLOWING_PATH
+from definitions import __SEIZURE_PATH, __MNIST_PATH, __WALL_FOLLOWING_PATH, __GENES_TRAIN_PATH, __GENES_TEST_PATH, \
+    __GENES_DATA_PATH, __GENES_LABELS_PATH
 
 Dataset = Tuple[np.ndarray, np.ndarray]
 
@@ -25,6 +28,65 @@ def load_wall_following() -> Dataset:
     y = le.fit_transform(y)
 
     return x, y
+
+
+def load_genes(train: bool = True) -> Dataset:
+    """
+    Loads the genes dataset.
+
+    :param train: whether to load the train or the test data.
+    If True, returns the train.
+
+    If False, returns the test.
+
+    Default value: True
+
+    :return: Tuple of numpy arrays containing the genes x and y.
+    """
+    # Create Path objects using the paths where the train and test files should be.
+    train_file = Path(__GENES_TRAIN_PATH)
+    test_file = Path(__GENES_TEST_PATH)
+
+    # If the files from the given paths do not exist, create them by splitting the genes dataset.
+    if not train_file.is_file() or not test_file.is_file():
+        # Read the dataset an get its values.
+        # Use string datatypes, so that we take the information as it is.
+        # If floats were to be used, then the labels would be converted to floats too.
+        x = read_csv(__GENES_DATA_PATH, engine='python')
+        y = read_csv(__GENES_LABELS_PATH, engine='python')
+        # Get x and y.
+        x, y = x.iloc[:, 1:].values, y.iloc[:, 1].values
+
+        from sklearn import preprocessing
+        le = preprocessing.LabelEncoder()
+        y = le.fit_transform(y)
+
+        database_split(x, y, train_file.absolute(), test_file.absolute())
+
+    # Create a filename based on the train value.
+    filename = train_file.absolute() if train else test_file.absolute()
+    # Read the dataset.
+    dataset = read_csv(filename, engine='python')
+    # Get x and y.
+    x, y = dataset.iloc[:, :-1].values, dataset.iloc[:, -1].values
+
+    return x, y
+
+
+def _get_mnist_labels() -> List[str]:
+    """
+    Creates labels for the mnist dataset attributes.
+
+    :return: List of strings containing the labels.
+    """
+    # Create a list with the prediction label's name.
+    names = ['number']
+
+    # For every pixel, create a label containing the word 'pixel', followed by its index.
+    for i in range(784):
+        names.append('pixel' + str(i))
+
+    return names
 
 
 def load_digits() -> Dataset:
@@ -109,5 +171,22 @@ def get_wall_following_name(class_num) -> str:
         1: 'Sharp Right Turn',
         2: 'Slight Left Turn',
         3: 'Slight Right Turn'
+    }
+    return class_names.get(class_num, 'Invalid')
+
+
+def get_gene_name(class_num) -> str:
+    """
+    Return the name of the gene corresponding to the given index.
+
+    :param class_num: the index of the gene's name.
+    :return: The gene's name.
+    """
+    class_names = {
+        0: 'BRCA',
+        1: 'COAD',
+        2: 'KIRC',
+        3: 'LUAD',
+        4: 'PRAD'
     }
     return class_names.get(class_num, 'Invalid')

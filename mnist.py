@@ -1,8 +1,8 @@
 import time
 import helpers
 import numpy as np
-from sklearn.cluster import SpectralClustering
-from sklearn.manifold import SpectralEmbedding
+from sklearn.cluster import SpectralClustering, KMeans
+from sklearn.manifold import SpectralEmbedding, Isomap
 from sklearn import metrics
 from definitions import SAVE_PRED_RESULTS, PLOTTING_MODE
 from helpers.preprocessing import cut_images
@@ -13,7 +13,7 @@ logger = helpers.Logger(folder='logs', filename='mnist')
 
 # If plots are enabled, create a plotter.
 if PLOTTING_MODE != 'none':
-    plotter = helpers.Plotter(folder='plots', mode=PLOTTING_MODE)
+    plotter = helpers.Plotter(folder='plots/mnist', mode=PLOTTING_MODE)
 
 
 def get_x_y() -> Tuple[np.ndarray, np.ndarray]:
@@ -45,7 +45,7 @@ def preprocess(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
     # Apply spectral embedding.
     logger.log('\tApplying Spectral Embedding with params:')
-    embedding = SpectralEmbedding()
+    embedding = Isomap()
     logger.log('\t' + str(embedding.get_params()))
     x = embedding.fit_transform(x)
 
@@ -68,7 +68,7 @@ def cluster(x: np.ndarray) -> np.ndarray:
     :return: the clustering labels.
     """
     logger.log('Creating model...')
-    clustering = SpectralClustering(n_clusters=2, assign_labels="discretize", random_state=0)
+    clustering = KMeans(n_clusters=10, random_state=0)
     logger.log('Applying Spectral Clustering with params: \n{}'.format(clustering.get_params()))
 
     logger.log('Fitting...')
@@ -76,6 +76,14 @@ def cluster(x: np.ndarray) -> np.ndarray:
     clustering.fit(x)
     end_time = time.perf_counter()
     logger.log('Model has been fit in {:.3} seconds.'.format(end_time - start_time))
+
+    if PLOTTING_MODE != 'none':
+        plotter.subfolder = 'graphs'
+        plotter.filename = 'kmeans_clustering'
+        plotter.xlabel = 'first feature'
+        plotter.ylabel = 'second feature'
+        plotter.title = 'Spectral Clustering'
+        plotter.scatter(x, clustering.labels_, clustering=True, centroids=clustering.cluster_centers_)
 
     return clustering.labels_
 
