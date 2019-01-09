@@ -11,11 +11,11 @@ from definitions import SAVE_PRED_RESULTS, PLOTTING_MODE
 from typing import Tuple
 
 # Create a logger.
-logger = helpers.Logger(folder='logs', filename='genes')
+logger = helpers.Logger(folder='logs', filename='genes_test')
 
 # If plots are enabled, create a plotter.
 if PLOTTING_MODE != 'none':
-    plotter = helpers.Plotter(folder='plots/genes', mode=PLOTTING_MODE)
+    plotter = helpers.Plotter(folder='plots/genes_test', mode=PLOTTING_MODE)
 
 
 def get_x_y() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -72,7 +72,7 @@ def cluster(clustering, x: np.ndarray) -> np.ndarray:
     logger.log('Model has been fit in {:.3} seconds.'.format(end_time - start_time))
 
     if PLOTTING_MODE != 'none':
-        plotter.subfolder = 'graphs/Spectral Clustering'
+        plotter.subfolder = 'tests/graphs/Spectral Clustering'
         plotter.filename = 'after_IsoMAP_c={}-n={}'.format(clustering_params['n_clusters'],
                                                            clustering_params['n_neighbors'])
         plotter.xlabel = 'first feature'
@@ -122,8 +122,7 @@ def show_prediction_info(x: np.ndarray, y_true: np.ndarray, y_predicted: dict, f
             logger.log('{text}: {number:.{points}g}'.format(text=key, number=value, points=4))
 
     # Create excel if save is True.
-    if SAVE_PRED_RESULTS:
-        helpers.utils.create_excel(results, folder, filename, extension, sheet_name)
+    helpers.utils.create_excel(results, folder, filename, extension, sheet_name)
 
 
 def run_embedding_test(x_train, y_train, x_test):
