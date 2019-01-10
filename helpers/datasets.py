@@ -17,7 +17,7 @@ def load_wall_following() -> Dataset:
     :return: Tuple of numpy arrays containing the robot wall following dataset x and y.
     """
     # Read the dataset and get its values.
-    dataset = read_csv(__WALL_FOLLOWING_PATH, engine='python')
+    dataset = read_csv(__WALL_FOLLOWING_PATH, engine='python', nrows=2000)
 
     # Get x and y.
     x = dataset.iloc[:, :-1].values
@@ -96,7 +96,10 @@ def load_digits() -> Dataset:
     :return: Tuple of numpy arrays containing the mnist handwritten digits x and y.
     """
     # Read the dataset and get its values.
-    dataset = read_csv(__MNIST_PATH, engine='python')
+    dataset = read_csv(__MNIST_PATH, engine='python', names=_get_mnist_labels())
+
+    # Select 5000 data randomly stratified.
+    dataset.sort_values(by='number').apply(lambda k: k.sample(min(len(k), 500), replace=True, random_state=0))
 
     # Get x and y.
     x = dataset.iloc[:, 1:].values

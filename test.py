@@ -129,32 +129,27 @@ def run_embedding_test(x_train, y_train, x_test):
     all_clusters, all_neighbors = [3, 5, 7], [5, 20, 100, 250]
     y_predicted: dict = {}
 
+    embedding_model = Isomap(n_neighbors=479, n_jobs=-1)
+    isomap_x_train, isomap_x_test = embed(embedding_model, x_train, y_train, x_test)
+
+    embedding_model = LocallyLinearEmbedding(n_neighbors=100, n_jobs=-1, random_state=0)
+    lle_x_train, lle_x_test = embed(embedding_model, x_train, y_train, x_test)
+
+    embedding_model = SpectralEmbedding(affinity='nearest_neighbors', n_neighbors=100, n_jobs=-1, random_state=0)
+    se_x_train, se_x_test = embed(embedding_model, x_train, y_train, x_test)
+
+    embedding_model = TSNE()
+    tsne_x_train, tsne_x_test = embed(embedding_model, x_train, y_train, x_test)
+
     for clusters in all_clusters:
         for neighbors in all_neighbors:
             clustering_model = SpectralClustering(affinity='nearest_neighbors', n_clusters=clusters,
                                                   n_neighbors=neighbors,
                                                   random_state=0, n_jobs=-1)
-
-            embedding_model = Isomap(n_neighbors=479, n_jobs=-1)
-            xl_name = 'IsoMAP'
-            new_x_train, new_x_test = embed(embedding_model, x_train, y_train, x_test)
-            y_predicted[xl_name] = cluster(clustering_model, new_x_train, xl_name)
-
-            embedding_model = LocallyLinearEmbedding(n_neighbors=100, n_jobs=-1, random_state=0)
-            xl_name = 'LLE'
-            new_x_train, new_x_test = embed(embedding_model, x_train, y_train, x_test)
-            y_predicted[xl_name] = cluster(clustering_model, new_x_train, xl_name)
-
-            embedding_model = SpectralEmbedding(affinity='nearest_neighbors', n_neighbors=100, n_jobs=-1,
-                                                random_state=0)
-            xl_name = 'SE'
-            new_x_train, new_x_test = embed(embedding_model, x_train, y_train, x_test)
-            y_predicted[xl_name] = cluster(clustering_model, new_x_train, xl_name)
-
-            embedding_model = TSNE()
-            xl_name = 'TSNE'
-            new_x_train, new_x_test = embed(embedding_model, x_train, y_train, x_test)
-            y_predicted[xl_name] = cluster(clustering_model, new_x_train, xl_name)
+            y_predicted['IsoMAP'] = cluster(clustering_model, isomap_x_train, 'IsoMAP')
+            y_predicted['LLE'] = cluster(clustering_model, lle_x_train, 'LLE')
+            y_predicted['SE'] = cluster(clustering_model, se_x_train, 'SE')
+            y_predicted['TSNE'] = cluster(clustering_model, tsne_x_train, 'TSNE')
 
             # Show prediction information.
             show_prediction_info(x_train, y_train, y_predicted,

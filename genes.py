@@ -4,8 +4,8 @@ from sklearn.preprocessing import MinMaxScaler
 
 import helpers
 import numpy as np
-from sklearn.cluster import SpectralClustering, KMeans
-from sklearn.manifold import SpectralEmbedding, Isomap, LocallyLinearEmbedding, TSNE
+from sklearn.cluster import SpectralClustering
+from sklearn.manifold import TSNE
 from sklearn import metrics
 from definitions import SAVE_PRED_RESULTS, PLOTTING_MODE
 from typing import Tuple
@@ -48,7 +48,7 @@ def preprocess(x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarray) -> 
 
     # Apply spectral embedding.
     logger.log('\tApplying Spectral Embedding with params:')
-    embedding = LocallyLinearEmbedding(n_neighbors=150, n_jobs=-1)
+    embedding = TSNE(random_state=0)
     embedding_params = embedding.get_params()
     logger.log('\t' + str(embedding_params))
     x_train = embedding.fit_transform(x_train)
