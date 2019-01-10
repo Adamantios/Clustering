@@ -72,9 +72,10 @@ def cluster(clustering, x: np.ndarray, embed_name: str) -> np.ndarray:
     logger.log('Model has been fit in {:.3} seconds.'.format(end_time - start_time))
 
     if PLOTTING_MODE != 'none':
-        plotter.subfolder = 'tests/graphs/Spectral Clustering'
-        plotter.filename = 'after_{}_c={}-n={}'.format(embed_name, clustering_params['n_clusters'],
-                                                       clustering_params['n_neighbors'])
+        plotter.subfolder = 'graphs/Spectral Clustering/{}/{} clusters' \
+            .format(embed_name, clustering_params['n_clusters'])
+        plotter.filename = 'after_{}_c={}-n={}' \
+            .format(embed_name, clustering_params['n_clusters'], clustering_params['n_neighbors'])
         plotter.xlabel = 'first feature'
         plotter.ylabel = 'second feature'
         plotter.title = 'Spectral Clustering after {}\nClusters: {}, Neighbors: {}' \
