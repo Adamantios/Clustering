@@ -91,7 +91,7 @@ def cluster(x: np.ndarray) -> np.ndarray:
         plotter.ylabel = 'second feature'
         plotter.title = 'Spectral Clustering after IsoMAP\nClusters: {}, Neighbors: {}' \
             .format(clustering_params['n_clusters'], clustering_params['n_neighbors'])
-        plotter.scatter(x, clustering.labels_, clustering=True, class_labels=helpers.datasets.get_gene_name)
+        plotter.scatter(x, clustering.labels_, clustering=True)
 
     return clustering.labels_
 

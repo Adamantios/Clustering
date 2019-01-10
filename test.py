@@ -80,7 +80,7 @@ def cluster(clustering, x: np.ndarray, embed_name: str) -> Tuple[np.ndarray, flo
         plotter.ylabel = 'second feature'
         plotter.title = 'Spectral Clustering after {}\nClusters: {}, Neighbors: {}' \
             .format(embed_name, clustering_params['n_clusters'], clustering_params['n_neighbors'])
-        plotter.scatter(x, clustering.labels_, clustering=True, class_labels=helpers.datasets.get_gene_name)
+        plotter.scatter(x, clustering.labels_, clustering=True)
 
     return clustering.labels_, fit_time
 
