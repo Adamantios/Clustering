@@ -54,7 +54,7 @@ def embed(embedding, x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarra
     return x_train, x_test
 
 
-def cluster(clustering, x: np.ndarray, embed_name: str) -> np.ndarray:
+def cluster(clustering, x: np.ndarray, embed_name: str) -> Tuple[np.ndarray, float]:
     """
     Fits a clustering model.
 
@@ -68,8 +68,8 @@ def cluster(clustering, x: np.ndarray, embed_name: str) -> np.ndarray:
     logger.log('Fitting...')
     start_time = time.perf_counter()
     clustering.fit(x)
-    end_time = time.perf_counter()
-    logger.log('Model has been fit in {:.3} seconds.'.format(end_time - start_time))
+    fit_time = time.perf_counter() - start_time
+    logger.log('Model has been fit in {:.3} seconds.'.format(fit_time))
 
     if PLOTTING_MODE != 'none':
         plotter.subfolder = 'graphs/Spectral Clustering/{}/{} clusters' \
@@ -82,7 +82,7 @@ def cluster(clustering, x: np.ndarray, embed_name: str) -> np.ndarray:
             .format(embed_name, clustering_params['n_clusters'], clustering_params['n_neighbors'])
         plotter.scatter(x, clustering.labels_, clustering=True, class_labels=helpers.datasets.get_gene_name)
 
-    return clustering.labels_
+    return clustering.labels_, fit_time
 
 
 def show_prediction_info(x: np.ndarray, y_true: np.ndarray, y_predicted: dict, folder: str = 'results',
@@ -114,7 +114,8 @@ def show_prediction_info(x: np.ndarray, y_true: np.ndarray, y_predicted: dict, f
                'Silhouette Coefficient': [metrics.silhouette_score(x, y_predicted['IsoMAP']),
                                           metrics.silhouette_score(x, y_predicted['LLE']),
                                           metrics.silhouette_score(x, y_predicted['SE']),
-                                          metrics.silhouette_score(x, y_predicted['TSNE'])]}
+                                          metrics.silhouette_score(x, y_predicted['TSNE'])],
+               'Time': [y_predicted['t1'], y_predicted['t2'], y_predicted['t3'], y_predicted['t4']]}
 
     # Log results.
     logger.log('Model\'s Results:')
@@ -147,10 +148,10 @@ def run_embedding_test(x_train, y_train, x_test):
             clustering_model = SpectralClustering(affinity='nearest_neighbors', n_clusters=clusters,
                                                   n_neighbors=neighbors,
                                                   random_state=0, n_jobs=-1)
-            y_predicted['IsoMAP'] = cluster(clustering_model, isomap_x_train, 'IsoMAP')
-            y_predicted['LLE'] = cluster(clustering_model, lle_x_train, 'LLE')
-            y_predicted['SE'] = cluster(clustering_model, se_x_train, 'SE')
-            y_predicted['TSNE'] = cluster(clustering_model, tsne_x_train, 'TSNE')
+            y_predicted['IsoMAP'], y_predicted['t1'] = cluster(clustering_model, isomap_x_train, 'IsoMAP')
+            y_predicted['LLE'], y_predicted['t2'] = cluster(clustering_model, lle_x_train, 'LLE')
+            y_predicted['SE'], y_predicted['t3'] = cluster(clustering_model, se_x_train, 'SE')
+            y_predicted['TSNE'], y_predicted['t4'] = cluster(clustering_model, tsne_x_train, 'TSNE')
 
             # Show prediction information.
             show_prediction_info(x_train, y_train, y_predicted,
