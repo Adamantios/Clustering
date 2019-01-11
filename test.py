@@ -140,7 +140,7 @@ def run_embedding_test(x_train, y_train, x_test):
     embedding_model = SpectralEmbedding(affinity='nearest_neighbors', n_neighbors=100, n_jobs=-1, random_state=0)
     se_x_train, se_x_test = embed(embedding_model, x_train, y_train, x_test)
 
-    embedding_model = TSNE()
+    embedding_model = TSNE(random_state=0)
     tsne_x_train, tsne_x_test = embed(embedding_model, x_train, y_train, x_test)
 
     for clusters in all_clusters:
