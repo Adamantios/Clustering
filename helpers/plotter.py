@@ -4,10 +4,7 @@ import numpy as np
 from os.path import join
 from typing import Generator, Tuple, Callable
 from matplotlib import pyplot as plt
-from matplotlib.patches import Circle, Polygon
-from scipy.spatial import voronoi_plot_2d
-from scipy.spatial.distance import cdist
-from scipy.spatial.qhull import Voronoi
+from matplotlib.patches import Polygon
 from helpers.utils import create_folder
 from helpers.datasets import get_eeg_name
 
