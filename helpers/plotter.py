@@ -251,14 +251,14 @@ class Plotter:
                 color = next(clusters_colors)
 
                 # Add cluster label.
-                mean = x[clusters == i].mean(axis=0)
-                ax.annotate('Cluster {}'.format(i), mean,
-                            horizontalalignment='center', verticalalignment='center',
-                            size=20, weight='bold', color=color)
+                # mean = x[clusters == i].mean(axis=0)
+                # ax.annotate('Cluster {}'.format(i), mean,
+                #             horizontalalignment='center', verticalalignment='center',
+                #             size=20, weight='bold', color=color)
 
                 # Draw cluster connections.
                 connections = Polygon(x[clusters == i], linewidth=.3, fill=False, joinstyle='bevel',
-                                      alpha=.5, color=color)
+                                      alpha=.8, color=color)
                 ax.add_patch(connections)
 
         ax.legend()
