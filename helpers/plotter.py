@@ -4,11 +4,15 @@ import numpy as np
 from os.path import join
 from typing import Generator, Tuple, Callable
 from matplotlib import pyplot as plt
+from matplotlib.patches import Circle, Polygon
+from scipy.spatial import voronoi_plot_2d
+from scipy.spatial.distance import cdist
+from scipy.spatial.qhull import Voronoi
 from helpers.utils import create_folder
 from helpers.datasets import get_eeg_name
 
 
-class TooManyDimensionsError(Exception):
+class DimensionError(Exception):
     pass
 
 
@@ -188,7 +192,7 @@ class Plotter:
         self._save_and_show(fig)
 
     def scatter(self, x: np.ndarray, y: np.ndarray, class_labels: Callable[[int], str] = None,
-                clustering: bool = False, centroids: np.ndarray = None) -> None:
+                clustering: bool = False, clusters: np.ndarray = None) -> None:
         """
         Plots and saves a scatterplot with the first one, two or three features.
 
@@ -196,18 +200,18 @@ class Plotter:
         :param y: the class labels.
         :param class_labels: an optional function which gets the class labels from their indexes.
         :param clustering: whether it is after clustering or not.
-        :param centroids: the centroids of the clustering.
+        :param clusters: the clustering labels.
         """
         if class_labels is None:
             def class_labels(index: int): return index
 
         # If we only have one principal component in a 1D array, i.e. M convert it to a 2D M x 1.
         if x.ndim == 1:
-            x = np.expand_dims(x, axis=1)
+            raise DimensionError('Expected 2 dimensions.Got 1 instead.')
 
         # If the principal components are more than two, the plot cannot be represented.
         elif x.shape[1] > 2:
-            raise TooManyDimensionsError('Cannot plot more than 2 dimensions.')
+            raise DimensionError('Cannot plot more than 2 dimensions.')
 
         self._create_plot_folder()
 
@@ -225,61 +229,47 @@ class Plotter:
             ['#fff100', '#ff8c00', '#e81123', '#ec008c', '#68217a', '#00188f', '#00bcf2', '#00b294', '#009e49',
              '#bad80a'])
 
-        centroid_colors = itertools.cycle(
+        clusters_colors = itertools.cycle(
             ['darkred', 'black', 'rosybrown', 'olivedrab', 'darkcyan', 'orangered', 'purple', 'crimson', 'darkseagreen',
              'tan'])
 
-        # If there is one pc, plot 1D.
-        if x.shape[1] == 1:
-            # Create an ax.
-            ax = fig.add_subplot(111)
+        # Create an ax.
+        ax = fig.add_subplot(111)
 
-            # For every class, scatter it's principal components.
+        # For every class, scatter it's principal components.
+        for i, count in zip(labels, counts):
+            if clustering:
+                label = 'Cluster {}'.format(i)
+            else:
+                label = '{} class'.format(class_labels(i))
+
+            ax.scatter(x[y == i, 0], x[y == i, 1], alpha=0.5, label=label, color=next(colors))
+
+        if clusters is not None:
+            # Get the class labels and count each label's instances.
+            labels, counts = np.unique(clusters, return_counts=True)
+
             for i, count in zip(labels, counts):
-                if clustering:
-                    label = 'Cluster {}'.format(i)
-                else:
-                    label = '{} class'.format(class_labels(i))
+                # Get next cluster color.
+                color = next(clusters_colors)
 
-                ax.scatter(x[y == i, 0], np.zeros((count, 1)), alpha=0.5, label=label, color=next(colors))
+                # Add cluster label.
+                mean = x[clusters == i].mean(axis=0)
+                ax.annotate('Cluster {}'.format(i), mean,
+                            horizontalalignment='center', verticalalignment='center',
+                            size=20, weight='bold', color=color)
 
-                if centroids is not None:
-                    ax.scatter(centroids[i], 0, alpha=0.5, color=next(centroid_colors))
-                    ax.text(centroids[i][0], centroids[i][1], 'Centroid')
+                # Draw cluster connections.
+                connections = Polygon(x[clusters == i], linewidth=.3, fill=False, joinstyle='bevel',
+                                      alpha=.5, color=color)
+                ax.add_patch(connections)
 
-                ax.legend()
-
-            ax.set_title(self.title)
-            # Set xlabel and clear x and y ticks.
-            ax.set_xlabel(self.xlabel)
-            ax.set_xticks([])
-            ax.set_yticks([])
-
-        # If there are 2 pcs plot 2D.
-        elif x.shape[1] == 2:
-            # Create an ax.
-            ax = fig.add_subplot(111)
-
-            # For every class, scatter it's principal components.
-            for i, count in zip(labels, counts):
-                if clustering:
-                    label = 'Cluster {}'.format(i)
-                else:
-                    label = '{} class'.format(class_labels(i))
-
-                ax.scatter(x[y == i, 0], x[y == i, 1], alpha=0.5, label=label, color=next(colors))
-
-                if centroids is not None:
-                    ax.scatter(centroids[i][0], centroids[i][1], alpha=0.5, color=next(centroid_colors))
-                    ax.text(centroids[i][0], centroids[i][1], 'Centroid')
-
-                ax.legend()
-
-            ax.set_title(self.title)
-            # Set x and y labels and clear x and y ticks.
-            ax.set_xlabel(self.xlabel)
-            ax.set_ylabel(self.ylabel)
-            ax.set_xticks([])
-            ax.set_yticks([])
+        ax.legend()
+        ax.set_title(self.title)
+        # Set x and y labels and clear x and y ticks.
+        ax.set_xlabel(self.xlabel)
+        ax.set_ylabel(self.ylabel)
+        ax.set_xticks([])
+        ax.set_yticks([])
 
         self._save_and_show(fig)
