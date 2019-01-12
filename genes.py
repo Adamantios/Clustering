@@ -144,10 +144,12 @@ def show_clustering_info(x: np.ndarray, y_true: np.ndarray, y_predicted: np.ndar
 
 def assign_to_clusters(x_train: np.ndarray, clusters: np.ndarray, x_test: np.ndarray, y_true: np.ndarray) -> None:
     """
+    Assigns new data to existing clusters, using nearest neighbors classification.
 
-    :param x_train:
-    :param clusters:
-    :param x_test:
+    :param x_train: the data which have been clustered.
+    :param clusters: the clusters.
+    :param x_test: the data to be assigned to clusters.
+    :param y_true: the data class labels.
     """
     logger.log('Creating Nearest Neighbors classifier with params:')
     clf = KNeighborsClassifier()
