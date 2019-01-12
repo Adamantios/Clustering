@@ -296,24 +296,19 @@ class Plotter:
             ax.scatter(x_test[y_test == i, 0], x_test[y_test == i, 1], alpha=0.5,
                        label='{} class'.format(class_labels(i)), color=next(colors))
 
-        # Get the predicted clusters.
-        labels = np.unique(y_pred)
-        # For every cluster, scatter its data.
-        for i in labels:
-            ax2.scatter(x_test[y_pred == i, 0], x_test[y_pred == i, 1], alpha=0.5,
-                        label='Classified at cluster {}'.format(i), color=next(colors))
-
-        # Get the clusters.
-        labels = np.unique(clusters)
-        # For every cluster, draw its connections.
-        for i in labels:
-            # Find cluster means.
-            mean = x[clusters == i].mean(axis=0)
+        # Get the predicted and the real clusters.
+        labels_pred, cluster_labels = np.unique(y_pred), np.unique(clusters)
+        for pred, cluster in zip(labels_pred, cluster_labels):
             # Get cluster color.
             color = next(clusters_colors)
+            # Scatter the cluster's data.
+            ax2.scatter(x_test[y_pred == pred, 0], x_test[y_pred == pred, 1], alpha=0.5,
+                        label='Classified at cluster {}'.format(pred), color=color)
 
+            # Find cluster means.
+            mean = x[clusters == cluster].mean(axis=0)
             # Create cluster label annotation string.
-            annotation = 'Cluster {}'.format(i)
+            annotation = 'Cluster {}'.format(cluster)
             # Add annotation to the plots.
             ax.annotate(annotation, mean,
                         horizontalalignment='center', verticalalignment='center',
