@@ -181,12 +181,12 @@ class Plotter:
 
     def _prepare_scatter(self, x: np.ndarray, x_test: np.ndarray = None, class_labels: Callable[[int], str] = None):
         """
-        Check if possible and prepare the plot.
+        Check if possible and prepare to plot.
 
         :param x: the data to be plot.
         :param x_test: the test data to be plot.
         :param class_labels: an optional function which gets the class labels from their indexes.
-        :return: the colors, clusters_colors, class_labels, fig and ax
+        :return: the colors the clusters_colors and the class_labels.
         """
         # If labels getter function has not been passed, use the indexes.
         if class_labels is None:
@@ -202,9 +202,6 @@ class Plotter:
         # Use a style.
         plt.style.use('seaborn-white')
 
-        # Create a figure.
-        fig = plt.figure(figsize=(10, 8))
-
         # Create colors for the plots.
         colors = itertools.cycle(
             ['#fff100', '#ff8c00', '#e81123', '#ec008c', '#68217a', '#00188f', '#00bcf2', '#00b294', '#009e49',
@@ -214,10 +211,7 @@ class Plotter:
             ['darkred', 'black', 'rosybrown', 'olivedrab', 'darkcyan', 'orangered', 'purple', 'crimson', 'darkseagreen',
              'tan'])
 
-        # Create an ax.
-        ax = fig.add_subplot(111)
-
-        return colors, clusters_colors, class_labels, fig, ax
+        return colors, clusters_colors, class_labels
 
     def _plot_scatter(self, fig, ax):
         """ Set legend, title, x and y labels and clear x and y ticks. """
@@ -241,7 +235,11 @@ class Plotter:
         :param clustering: whether it is after clustering or not.
         :param clusters: the clustering labels.
         """
-        colors, clusters_colors, class_labels, fig, ax = self._prepare_scatter(x, class_labels=class_labels)
+        colors, clusters_colors, class_labels = self._prepare_scatter(x, class_labels=class_labels)
+
+        # Create a figure and an ax.
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111)
 
         # Get the class labels and count each label's instances.
         labels, counts = np.unique(y, return_counts=True)
@@ -269,8 +267,9 @@ class Plotter:
 
         self._plot_scatter(fig, ax)
 
-    def scatter_labels_vs_clusters(self, x: np.ndarray, clusters: np.ndarray, x_test: np.ndarray, y_test: np.ndarray,
-                                   class_labels: Callable[[int], str] = None) -> None:
+    def scatter_classified_comparison(self, x: np.ndarray, clusters: np.ndarray, x_test: np.ndarray, y_test: np.ndarray,
+                                      y_pred: np.ndarray, sub1: str, sub2: str,
+                                      class_labels: Callable[[int], str] = None) -> None:
         """
         Plots and saves a scatterplot with the first one, two or three features.
 
@@ -278,57 +277,68 @@ class Plotter:
         :param clusters: the clustering labels.
         :param x_test: the data to be classified.
         :param y_test: the class labels of the data to be classified.
+        :param y_pred: the predicted clusters of the classified data.
+        :param sub1: first plot's title.
+        :param sub2: second plot's title.
         :param class_labels: an optional function which gets the class labels from their indexes.
         """
-        colors, clusters_colors, class_labels, fig, ax = self._prepare_scatter(x, x_test, class_labels)
+        colors, clusters_colors, class_labels = self._prepare_scatter(x, x_test, class_labels)
 
-        # Get the predicted class labels and count each class instances.
-        labels, counts = np.unique(y_test, return_counts=True)
+        # Create a figure and 2 axes for the plots.
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(121)
+        ax2 = fig.add_subplot(122)
+
+        # Get the class labels of the data to be classified.
+        labels = np.unique(y_test)
         # For every class, scatter its data.
-        for i, count in zip(labels, counts):
+        for i in labels:
             ax.scatter(x_test[y_test == i, 0], x_test[y_test == i, 1], alpha=0.5,
                        label='{} class'.format(class_labels(i)), color=next(colors))
 
-        # Get the num of clusters and count each cluster's instances.
-        labels, counts = np.unique(clusters, return_counts=True)
+        # Get the predicted clusters.
+        labels = np.unique(y_pred)
+        # For every cluster, scatter its data.
+        for i in labels:
+            ax2.scatter(x_test[y_pred == i, 0], x_test[y_pred == i, 1], alpha=0.5,
+                        label='Classified at cluster {}'.format(i), color=next(colors))
+
+        # Get the clusters.
+        labels = np.unique(clusters)
         # For every cluster, draw its connections.
-        for i, count in zip(labels, counts):
-            # Add cluster label.
+        for i in labels:
+            # Find cluster means.
             mean = x[clusters == i].mean(axis=0)
-            ax.annotate('Cluster {}'.format(i), mean,
+            # Get cluster color.
+            color = next(clusters_colors)
+
+            # Create cluster label annotation string.
+            annotation = 'Cluster {}'.format(i)
+            # Add annotation to the plots.
+            ax.annotate(annotation, mean,
                         horizontalalignment='center', verticalalignment='center',
-                        size=20, weight='bold', color=next(clusters_colors))
-            # ax.scatter(x[clusters == i, 0], x[clusters == i, 1], alpha=0.5, color=next(clusters_colors))
+                        size=20, weight='bold', color=color)
+            ax2.annotate(annotation, mean,
+                         horizontalalignment='center', verticalalignment='center',
+                         size=20, weight='bold', color=color)
 
-        self._plot_scatter(fig, ax)
+        # Set suptitle.
+        fig.suptitle(self.title)
 
-    def scatter_classified_to_clusters(self, x: np.ndarray, clusters: np.ndarray, x_test: np.ndarray,
-                                       y_pred: np.ndarray) -> None:
-        """
-        Plots and saves a scatterplot with the first one, two or three features.
+        # Set legend, title, x and y labels and clear x and y ticks.
+        ax.legend()
+        ax.set_title(sub1)
+        ax.set_xlabel(self.xlabel)
+        ax.set_ylabel(self.ylabel)
+        ax.set_xticks([])
+        ax.set_yticks([])
 
-        :param x: the clustered data.
-        :param clusters: the clustering labels.
-        :param x_test: the classified data.
-        :param y_pred: the predicted clusters of the classified data.
-        """
-        colors, clusters_colors, _, fig, ax = self._prepare_scatter(x, x_test)
+        # Set legend, title, x and y labels and clear x and y ticks.
+        ax2.legend()
+        ax2.set_title(sub2)
+        ax2.set_xlabel(self.xlabel)
+        ax2.set_ylabel(self.ylabel)
+        ax2.set_xticks([])
+        ax2.set_yticks([])
 
-        # Get the predicted clusters and count their instances.
-        labels, counts = np.unique(y_pred, return_counts=True)
-        # For every class, scatter its data.
-        for i, count in zip(labels, counts):
-            ax.scatter(x_test[y_pred == i, 0], x_test[y_pred == i, 1], alpha=0.5,
-                       label='Classified at cluster {}'.format(i), color=next(colors))
-
-        # Get the num of clusters and count each cluster's instances.
-        labels, counts = np.unique(clusters, return_counts=True)
-        # For every cluster, draw its connections.
-        for i, count in zip(labels, counts):
-            # Add cluster label.
-            mean = x[clusters == i].mean(axis=0)
-            ax.annotate('Cluster {}'.format(i), mean,
-                        horizontalalignment='center', verticalalignment='center',
-                        size=20, weight='bold', color=next(clusters_colors))
-
-        self._plot_scatter(fig, ax)
+        self._save_and_show(fig)

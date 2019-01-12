@@ -162,16 +162,11 @@ def assign_to_clusters(x_train: np.ndarray, clusters: np.ndarray, x_test: np.nda
         plotter.filename = 'data_vs_clusters'
         plotter.xlabel = 'first feature'
         plotter.ylabel = 'second feature'
-        plotter.title = 'Test data vs clusters'
-        plotter.scatter_labels_vs_clusters(x_train, clusters, x_test, y_true, helpers.datasets.get_gene_name)
-
-        # Plot classified data.
-        plotter.subfolder = 'classification'
-        plotter.filename = 'nearest_neighbors_k={}'.format(clf_params['n_neighbors'])
-        plotter.xlabel = 'first feature'
-        plotter.ylabel = 'second feature'
-        plotter.title = 'Test data assigned to clusters\nk={}'.format(clf_params['n_neighbors'])
-        plotter.scatter_classified_to_clusters(x_train, clusters, x_test, y_pred)
+        plotter.title = 'Classified data vs Clusters'
+        plotter.scatter_classified_comparison(x_train, clusters, x_test, y_true, y_pred,
+                                              'Test data vs clusters',
+                                              'Test data assigned to clusters\nk={}'.format(clf_params['n_neighbors']),
+                                              helpers.datasets.get_gene_name)
 
 
 def main():
