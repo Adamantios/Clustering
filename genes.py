@@ -159,7 +159,7 @@ def assign_to_clusters(x_train: np.ndarray, clusters: np.ndarray, x_test: np.nda
     if PLOTTING_MODE != 'none':
         # Plot data vs clusters.
         plotter.subfolder = 'classification'
-        plotter.filename = 'data_vs_clusters'
+        plotter.filename = 'data_vs_clusters\nk={}'.format(clf_params['n_neighbors'])
         plotter.xlabel = 'first feature'
         plotter.ylabel = 'second feature'
         plotter.title = 'Classified data vs Clusters'
