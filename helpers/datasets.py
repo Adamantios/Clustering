@@ -1,31 +1,53 @@
-from pathlib import Path
-
 import numpy as np
-from typing import Tuple, List
+from pathlib import Path
+from typing import Tuple
 from pandas import read_csv, DataFrame
 from sklearn.model_selection import train_test_split
-from definitions import __SEIZURE_PATH, __MNIST_PATH, __WALL_FOLLOWING_PATH, __GENES_TRAIN_PATH, __GENES_TEST_PATH, \
-    __GENES_DATA_PATH, __GENES_LABELS_PATH
+from definitions import __GENES_TRAIN_PATH, __GENES_TEST_PATH, __GENES_DATA_PATH, __GENES_LABELS_PATH, __VOICE_PATH, \
+    __VOICE_TRAIN_PATH, __VOICE_TEST_PATH
 
 Dataset = Tuple[np.ndarray, np.ndarray]
 
 
-def load_wall_following() -> Dataset:
+def load_voice(train: bool = True) -> Dataset:
     """
-    Loads the robot wall following dataset.
+    Loads the voices dataset.
+
+    :param train: whether to load the train or the test data.
+    If True, returns the train.
+
+    If False, returns the test.
+
+    Default value: True
 
     :return: Tuple of numpy arrays containing the robot wall following dataset x and y.
     """
-    # Read the dataset and get its values.
-    dataset = read_csv(__WALL_FOLLOWING_PATH, engine='python', nrows=2000)
+    # Create Path objects using the paths where the train and test files should be.
+    train_file = Path(__VOICE_TRAIN_PATH)
+    test_file = Path(__VOICE_TEST_PATH)
 
+    # If the files from the given paths do not exist, create them by splitting the genes dataset.
+    if not train_file.is_file() or not test_file.is_file():
+        # Read the dataset an get its values.
+        # Use string datatypes, so that we take the information as it is.
+        # If floats were to be used, then the labels would be converted to floats too.
+        dataset = read_csv(__VOICE_PATH, engine='python')
+        # Get x and y.
+        x = dataset.iloc[:, :-1].values
+        y = dataset.iloc[:, -1].values
+
+        from sklearn import preprocessing
+        le = preprocessing.LabelEncoder()
+        y = le.fit_transform(y)
+
+        database_split(x, y, train_file.absolute(), test_file.absolute())
+
+    # Create a filename based on the train value.
+    filename = train_file.absolute() if train else test_file.absolute()
+    # Read the dataset.
+    dataset = read_csv(filename, engine='python')
     # Get x and y.
-    x = dataset.iloc[:, :-1].values
-    y = dataset.iloc[:, -1].values
-
-    from sklearn import preprocessing
-    le = preprocessing.LabelEncoder()
-    y = le.fit_transform(y)
+    x, y = dataset.iloc[:, :-1].values, dataset.iloc[:, -1].values
 
     return x, y
 
@@ -73,57 +95,6 @@ def load_genes(train: bool = True) -> Dataset:
     return x, y
 
 
-def _get_mnist_labels() -> List[str]:
-    """
-    Creates labels for the mnist dataset attributes.
-
-    :return: List of strings containing the labels.
-    """
-    # Create a list with the prediction label's name.
-    names = ['number']
-
-    # For every pixel, create a label containing the word 'pixel', followed by its index.
-    for i in range(784):
-        names.append('pixel' + str(i))
-
-    return names
-
-
-def load_digits() -> Dataset:
-    """
-    Loads the mnist handwritten digits dataset.
-
-    :return: Tuple of numpy arrays containing the mnist handwritten digits x and y.
-    """
-    # Read the dataset and get its values.
-    dataset = read_csv(__MNIST_PATH, engine='python', names=_get_mnist_labels())
-
-    # Select 5000 data randomly stratified.
-    dataset.sort_values(by='number').apply(lambda k: k.sample(min(len(k), 500), replace=True, random_state=0))
-
-    # Get x and y.
-    x = dataset.iloc[:, 1:].values
-    y = dataset.iloc[:, 0].values
-
-    return x, y
-
-
-def load_seizure() -> Dataset:
-    """
-    Loads the epileptic seizure dataset.
-
-    :return: Tuple of numpy arrays containing the epileptic seizure x and y.
-    """
-    # Read the dataset.
-    dataset = read_csv(__SEIZURE_PATH, engine='python')
-    # Drop irrelevant data.
-    dataset.drop(dataset.columns[[0]], axis=1, inplace=True)
-    # Get x and y.
-    x, y = dataset.iloc[:, :-1].values, dataset.iloc[:, -1].values
-
-    return x, y
-
-
 def database_split(x: np.ndarray, y: np.ndarray, train_filename: str, test_filename: str) -> None:
     """
     Splits a csv dataset to 60% train and 40% test files, stratified.
@@ -145,35 +116,16 @@ def database_split(x: np.ndarray, y: np.ndarray, train_filename: str, test_filen
     DataFrame(test, dtype=np.str).to_csv(test_filename, index=False)
 
 
-def get_eeg_name(class_num) -> str:
+def get_voice_name(class_num) -> str:
     """
-    Return the name of the eeg corresponding to the given index.
+    Return the gender of the given index.
 
-    :param class_num: the index of the eeg name.
-    :return: The eeg name.
-    """
-    class_names = {
-        1: 'Eyes open',
-        2: 'Eyes closed',
-        3: 'Healthy cells',
-        4: 'Cancer cells',
-        5: 'Epileptic seizure'
-    }
-    return class_names.get(class_num, 'Invalid')
-
-
-def get_wall_following_name(class_num) -> str:
-    """
-    Return the name of the turn corresponding to the given index.
-
-    :param class_num: the index of the turn class.
-    :return: The turn's class name.
+    :param class_num: the index.
+    :return: The gender.
     """
     class_names = {
-        0: 'Move Forward',
-        1: 'Sharp Right Turn',
-        2: 'Slight Left Turn',
-        3: 'Slight Right Turn'
+        0: 'Female',
+        1: 'Male'
     }
     return class_names.get(class_num, 'Invalid')
 

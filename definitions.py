@@ -14,14 +14,12 @@ OUT_DIR_NAME = 'out'
 # The datasets folder name.
 DATASETS = 'datasets'
 
-# The seizure detection dataset's filename.
-DATASET_SEIZURE = 'eeg.csv'
-
-# The mnist train dataset's filename.
-DATASET_MNIST = 'mnist.csv'
-
-# The robot wall following dataset's filename.
-DATASET_WALL_FOLLOWING = 'wall_following.csv'
+# The voice dataset's filename.
+DATASET_VOICE = 'voice.csv'
+# The voice train dataset's filename.
+DATASET_VOICE_TRAIN = 'voice_train.csv'
+# The voice test dataset's filename.
+DATASET_VOICE_TEST = 'voice_test.csv'
 
 # The genes data filename.
 DATA_GENES = 'genes.csv'
@@ -41,14 +39,12 @@ __ROOT = dirname(abspath(__file__))
 # The output folder's path.
 __OUT_PATH = join(__ROOT, OUT_DIR_NAME)
 
-# The path to the seizure detection dataset.
-__SEIZURE_PATH = join(__ROOT, DATASETS, DATASET_SEIZURE)
-
-# The path to the seizure detection train dataset.
-__MNIST_PATH = join(__ROOT, DATASETS, DATASET_MNIST)
-
-# The path to the seizure detection train dataset.
-__WALL_FOLLOWING_PATH = join(__ROOT, DATASETS, DATASET_WALL_FOLLOWING)
+# The path to the voice dataset.
+__VOICE_PATH = join(__ROOT, DATASETS, DATASET_VOICE)
+# The path to the voice train dataset.
+__VOICE_TRAIN_PATH = join(__ROOT, DATASETS, DATASET_VOICE_TRAIN)
+# The path to the voice test dataset.
+__VOICE_TEST_PATH = join(__ROOT, DATASETS, DATASET_VOICE_TEST)
 
 # The path to the genes data.
 __GENES_DATA_PATH = join(__ROOT, DATASETS, DATA_GENES)
