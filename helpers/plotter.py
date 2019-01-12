@@ -109,15 +109,16 @@ class Plotter:
         return colors, clusters_colors, class_labels
 
     def scatter(self, x: np.ndarray, y: np.ndarray, class_labels: Callable[[int], str] = None, clustering: bool = False,
-                clusters: np.ndarray = None) -> None:
+                clusters: np.ndarray = None, linewidth: float = .3) -> None:
         """
-        Plots and saves a scatterplot with the first one, two or three features.
+        Plots and saves a scatterplot.
 
         :param x: the features to plot.
         :param y: the class labels.
         :param class_labels: an optional function which gets the class labels from their indexes.
         :param clustering: whether it is after clustering or not.
         :param clusters: the clustering labels.
+        :param linewidth: the lines width between clusters connections.
         """
         colors, clusters_colors, class_labels = self._prepare_scatter(x, class_labels=class_labels)
 
@@ -145,7 +146,7 @@ class Plotter:
                 color = next(clusters_colors)
 
                 # Draw cluster connections.
-                connections = Polygon(x[clusters == i], linewidth=.3, fill=False, joinstyle='bevel',
+                connections = Polygon(x[clusters == i], linewidth=linewidth, fill=False, joinstyle='bevel',
                                       alpha=.8, color=color)
                 ax.add_patch(connections)
 
