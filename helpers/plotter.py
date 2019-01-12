@@ -213,17 +213,6 @@ class Plotter:
 
         return colors, clusters_colors, class_labels
 
-    def _plot_scatter(self, fig, ax):
-        """ Set legend, title, x and y labels and clear x and y ticks. """
-        ax.legend()
-        ax.set_title(self.title)
-        ax.set_xlabel(self.xlabel)
-        ax.set_ylabel(self.ylabel)
-        ax.set_xticks([])
-        ax.set_yticks([])
-
-        self._save_and_show(fig)
-
     def scatter(self, x: np.ndarray, y: np.ndarray, class_labels: Callable[[int], str] = None, clustering: bool = False,
                 clusters: np.ndarray = None) -> None:
         """
@@ -265,7 +254,15 @@ class Plotter:
                                       alpha=.8, color=color)
                 ax.add_patch(connections)
 
-        self._plot_scatter(fig, ax)
+        # Set legend, title, x and y labels and clear x and y ticks.
+        ax.legend()
+        ax.set_title(self.title)
+        ax.set_xlabel(self.xlabel)
+        ax.set_ylabel(self.ylabel)
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        self._save_and_show(fig)
 
     def scatter_classified_comparison(self, x: np.ndarray, clusters: np.ndarray, x_test: np.ndarray, y_test: np.ndarray,
                                       y_pred: np.ndarray, sub1: str, sub2: str,
