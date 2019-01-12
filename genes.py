@@ -51,7 +51,7 @@ def preprocess(x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarray) -> 
     x_train = scaler.fit_transform(x_train)
     x_test = scaler.transform(x_test)
 
-    # Apply t-SNE.
+    # Apply LLE.
     logger.log('\tApplying LLE with params:')
     embedding = LocallyLinearEmbedding(n_neighbors=100, n_jobs=-1, random_state=0)
     embedding_params = embedding.get_params()
