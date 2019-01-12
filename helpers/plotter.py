@@ -1,12 +1,12 @@
 import itertools
-import random
-import numpy as np
 from os.path import join
-from typing import Generator, Tuple, Callable
+from typing import Callable
+
+import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.patches import Polygon
+
 from helpers.utils import create_folder
-from helpers.datasets import get_eeg_name
 
 
 class DimensionError(Exception):
@@ -58,111 +58,6 @@ class Plotter:
         self.extension: str = 'png'
         self.xlabel: str = ''
         self.ylabel: str = ''
-
-    def _plot_eeg(self, eeg: np.ndarray):
-        """
-        Plots an eeg.
-
-        :param eeg: the eeg to be plotted.
-        """
-        self._create_plot_folder()
-
-        # Use a style.
-        plt.style.use('seaborn-white')
-
-        # Create a subplot.
-        fig, ax = plt.subplots(figsize=(9, 4))
-        # Create a super title.
-        fig.suptitle('{}\n{}'.format(self.suptitle, self.title), fontsize='large')
-        # Create the plot.
-        ax.plot(eeg)
-
-        # Remove xticks, add xlabel and ylabel.
-        ax.set_xticks([])
-        ax.set_xlabel("1 second", fontsize='large')
-        ax.set_ylabel("EEG Value", fontsize='large')
-
-        self._save_and_show(fig)
-
-    def _plot_digit(self, digit: np.ndarray) -> None:
-        """
-        Plots and saves an image of a digit.
-
-        :param digit: the digit to be plotted.
-        """
-        self._create_plot_folder()
-
-        # Change the shape of the image to 2D.
-        digit.shape = (28, 28)
-
-        # Create a subplot.
-        fig, ax = plt.subplots(figsize=(3, 3.5))
-        # Create a super title.
-        fig.suptitle('{}\n{}'.format(self.suptitle, self.title), fontsize='large')
-        # Create an image from the digit's pixels. The pixels are not rgb so cmap should be gray.
-        ax.imshow(digit, cmap='gray')
-        # Remove ticks
-        ax.set_xticks([])
-        ax.set_yticks([])
-
-        self._save_and_show(fig)
-
-    @staticmethod
-    def _random_picker(x: np.ndarray, num: int) -> Generator[Tuple[np.ndarray, int], None, None]:
-        """
-        Create a generator which contains a certain number of randomly chosen values from a np array and an index.
-
-        :param x: the np array
-        :param num: the number of the random values to be generated.
-            If the number is None, bigger than the list or less than zero, randomizes the whole list.
-        :return: Generator with a random value and its index.
-        """
-        # If the number is None, bigger than the list or less than zero, set the number with the lists length.
-        if num is None or num > len(x) or num < 0:
-            num = len(x)
-
-        # Get num random samples from the list.
-        rand_samples = random.sample(range(len(x)), num)
-
-        # For each random sample, yield the sample and its index.
-        for sample, i in zip(rand_samples, range(1, len(rand_samples) + 1)):
-            yield sample, i
-
-    def plot_classified_eegs(self, x, y_pred, y_true, num=None):
-        """
-        Plots and saves a certain number of classified eegs.
-
-        :param x: the eegs.
-        :param y_pred: the predicted values of the classified eeg.
-        :param y_true: the real value of the classified eegs.
-        :param num: the number of eegs to be plotted.
-        """
-        filename = self.filename
-
-        # Plot num of eegs randomly.
-        for eeg, i in self._random_picker(x, num):
-            self.suptitle = 'Classified as {}'.format(get_eeg_name(y_pred[eeg]))
-            self.title = 'Correct condition is {}'.format(get_eeg_name(y_true[eeg]))
-            self.filename = '{}{}'.format(filename, str(i))
-            self._plot_eeg(x[eeg])
-
-    def plot_classified_digits(self, x: np.ndarray, y_pred: np.ndarray, y_true: np.ndarray, num: int = None) -> None:
-        """
-        Plots and saves a certain number of classified digits.
-
-        :param x: the digit.
-        :param y_pred: the predicted value of the classified digit.
-        :param y_true: the real value of the classified digit.
-        :param num: the number of digits to be plotted.
-        """
-        filename = self.filename
-
-        # Plot num of digits randomly.
-        for digit, i in self._random_picker(x, num):
-            self.suptitle = 'Classified as {}'.format(y_pred[digit])
-            self.title = 'Correct condition is {}'.format(y_true[digit])
-            self.filename = '{}{}'.format(filename, str(i))
-            self._plot_digit(x[digit])
 
     @staticmethod
     def _check_dims(x: np.ndarray) -> None:
