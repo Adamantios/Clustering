@@ -164,51 +164,38 @@ class Plotter:
             self.filename = '{}{}'.format(filename, str(i))
             self._plot_digit(x[digit])
 
-    def heatmap_correlation(self, data: np.ndarray) -> None:
+    @staticmethod
+    def _check_dims(x: np.ndarray) -> None:
         """
-        Create and save a heatmap, representing correlation.
+        Checks if the passed data dimension is 2D.
 
-        :param data: the correlated data to be plotted.
+        :param x: the data to be checked.
         """
-        self._create_plot_folder()
-
-        # Use a style.
-        plt.style.use('seaborn-white')
-
-        # Create a subplot.
-        fig, ax = plt.subplots()
-
-        # Create the heatmap.
-        img = ax.matshow(data, aspect='auto')
-
-        # Add a colorbar, showing the percentage of the correlation.
-        plt.colorbar(img)
-        plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
-
-        self._save_and_show(fig)
-
-    def scatter(self, x: np.ndarray, y: np.ndarray, class_labels: Callable[[int], str] = None,
-                clustering: bool = False, clusters: np.ndarray = None) -> None:
-        """
-        Plots and saves a scatterplot with the first one, two or three features.
-
-        :param x: the features to plot.
-        :param y: the class labels.
-        :param class_labels: an optional function which gets the class labels from their indexes.
-        :param clustering: whether it is after clustering or not.
-        :param clusters: the clustering labels.
-        """
-        if class_labels is None:
-            def class_labels(index: int): return index
-
-        # If we only have one principal component in a 1D array, i.e. M convert it to a 2D M x 1.
+        # If one dimensional data have been passed, raise an error.
         if x.ndim == 1:
             raise DimensionError('Expected 2 dimensions.Got 1 instead.')
 
-        # If the principal components are more than two, the plot cannot be represented.
+        # If more than two dimensional data have been passed, raise an error.
         elif x.shape[1] > 2:
             raise DimensionError('Cannot plot more than 2 dimensions.')
+
+    def _prepare_scatter(self, x: np.ndarray, x_test: np.ndarray = None, class_labels: Callable[[int], str] = None):
+        """
+        Check if possible and prepare the plot.
+
+        :param x: the data to be plot.
+        :param x_test: the test data to be plot.
+        :param class_labels: an optional function which gets the class labels from their indexes.
+        :return: the colors, clusters_colors, class_labels, fig and ax
+        """
+        # If labels getter function has not been passed, use the indexes.
+        if class_labels is None:
+            def class_labels(index: int): return index
+
+        self._check_dims(x)
+
+        if x_test is not None:
+            self._check_dims(x_test)
 
         self._create_plot_folder()
 
@@ -217,9 +204,6 @@ class Plotter:
 
         # Create a figure.
         fig = plt.figure(figsize=(10, 8))
-
-        # Get the class labels and count each label's instances.
-        labels, counts = np.unique(y, return_counts=True)
 
         # Create colors for the plots.
         colors = itertools.cycle(
@@ -233,6 +217,34 @@ class Plotter:
         # Create an ax.
         ax = fig.add_subplot(111)
 
+        return colors, clusters_colors, class_labels, fig, ax
+
+    def _plot_scatter(self, fig, ax):
+        """ Set legend, title, x and y labels and clear x and y ticks. """
+        ax.legend()
+        ax.set_title(self.title)
+        ax.set_xlabel(self.xlabel)
+        ax.set_ylabel(self.ylabel)
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        self._save_and_show(fig)
+
+    def scatter(self, x: np.ndarray, y: np.ndarray, class_labels: Callable[[int], str] = None, clustering: bool = False,
+                clusters: np.ndarray = None) -> None:
+        """
+        Plots and saves a scatterplot with the first one, two or three features.
+
+        :param x: the features to plot.
+        :param y: the class labels.
+        :param class_labels: an optional function which gets the class labels from their indexes.
+        :param clustering: whether it is after clustering or not.
+        :param clusters: the clustering labels.
+        """
+        colors, clusters_colors, class_labels, fig, ax = self._prepare_scatter(x, class_labels=class_labels)
+
+        # Get the class labels and count each label's instances.
+        labels, counts = np.unique(y, return_counts=True)
         # For every class, scatter it's principal components.
         for i, count in zip(labels, counts):
             if clustering:
@@ -250,23 +262,73 @@ class Plotter:
                 # Get next cluster color.
                 color = next(clusters_colors)
 
-                # Add cluster label.
-                # mean = x[clusters == i].mean(axis=0)
-                # ax.annotate('Cluster {}'.format(i), mean,
-                #             horizontalalignment='center', verticalalignment='center',
-                #             size=20, weight='bold', color=color)
-
                 # Draw cluster connections.
                 connections = Polygon(x[clusters == i], linewidth=.3, fill=False, joinstyle='bevel',
                                       alpha=.8, color=color)
                 ax.add_patch(connections)
 
-        ax.legend()
-        ax.set_title(self.title)
-        # Set x and y labels and clear x and y ticks.
-        ax.set_xlabel(self.xlabel)
-        ax.set_ylabel(self.ylabel)
-        ax.set_xticks([])
-        ax.set_yticks([])
+        self._plot_scatter(fig, ax)
 
-        self._save_and_show(fig)
+    def scatter_labels_vs_clusters(self, x: np.ndarray, clusters: np.ndarray, x_test: np.ndarray, y_test: np.ndarray,
+                                   class_labels: Callable[[int], str] = None) -> None:
+        """
+        Plots and saves a scatterplot with the first one, two or three features.
+
+        :param x: the clustered data.
+        :param clusters: the clustering labels.
+        :param x_test: the data to be classified.
+        :param y_test: the class labels of the data to be classified.
+        :param class_labels: an optional function which gets the class labels from their indexes.
+        """
+        colors, clusters_colors, class_labels, fig, ax = self._prepare_scatter(x, x_test, class_labels)
+
+        # Get the predicted class labels and count each class instances.
+        labels, counts = np.unique(y_test, return_counts=True)
+        # For every class, scatter its data.
+        for i, count in zip(labels, counts):
+            ax.scatter(x_test[y_test == i, 0], x_test[y_test == i, 1], alpha=0.5,
+                       label='{} class'.format(class_labels(i)), color=next(colors))
+
+        # Get the num of clusters and count each cluster's instances.
+        labels, counts = np.unique(clusters, return_counts=True)
+        # For every cluster, draw its connections.
+        for i, count in zip(labels, counts):
+            # Add cluster label.
+            mean = x[clusters == i].mean(axis=0)
+            ax.annotate('Cluster {}'.format(i), mean,
+                        horizontalalignment='center', verticalalignment='center',
+                        size=20, weight='bold', color=next(clusters_colors))
+            # ax.scatter(x[clusters == i, 0], x[clusters == i, 1], alpha=0.5, color=next(clusters_colors))
+
+        self._plot_scatter(fig, ax)
+
+    def scatter_classified_to_clusters(self, x: np.ndarray, clusters: np.ndarray, x_test: np.ndarray,
+                                       y_pred: np.ndarray) -> None:
+        """
+        Plots and saves a scatterplot with the first one, two or three features.
+
+        :param x: the clustered data.
+        :param clusters: the clustering labels.
+        :param x_test: the classified data.
+        :param y_pred: the predicted clusters of the classified data.
+        """
+        colors, clusters_colors, _, fig, ax = self._prepare_scatter(x, x_test)
+
+        # Get the predicted clusters and count their instances.
+        labels, counts = np.unique(y_pred, return_counts=True)
+        # For every class, scatter its data.
+        for i, count in zip(labels, counts):
+            ax.scatter(x_test[y_pred == i, 0], x_test[y_pred == i, 1], alpha=0.5,
+                       label='Classified at cluster {}'.format(i), color=next(colors))
+
+        # Get the num of clusters and count each cluster's instances.
+        labels, counts = np.unique(clusters, return_counts=True)
+        # For every cluster, draw its connections.
+        for i, count in zip(labels, counts):
+            # Add cluster label.
+            mean = x[clusters == i].mean(axis=0)
+            ax.annotate('Cluster {}'.format(i), mean,
+                        horizontalalignment='center', verticalalignment='center',
+                        size=20, weight='bold', color=next(clusters_colors))
+
+        self._plot_scatter(fig, ax)
