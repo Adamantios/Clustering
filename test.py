@@ -11,21 +11,21 @@ from definitions import SAVE_PRED_RESULTS, PLOTTING_MODE
 from typing import Tuple
 
 # Create a logger.
-logger = helpers.Logger(folder='logs', filename='genes_test')
+logger = helpers.Logger(folder='logs', filename='voice_test')
 
 # If plots are enabled, create a plotter.
 if PLOTTING_MODE != 'none':
-    plotter = helpers.Plotter(folder='plots/genes_test', mode=PLOTTING_MODE)
+    plotter = helpers.Plotter(folder='plots/voice_test', mode=PLOTTING_MODE)
 
 
 def get_x_y() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """ Gets x and y train and test pairs. """
     logger.log('Loading Dataset...')
-    x_train, y_train = helpers.datasets.load_genes()
+    x_train, y_train = helpers.datasets.load_voice()
     logger.log(str(len(y_train)) + ' train data loaded')
 
     x_test, y_test = None, None
-    # x_test, y_test = helpers.datasets.load_genes(train=False)
+    # x_test, y_test = helpers.datasets.load_voice(train=False)
     # logger.log(str(len(y_test)) + ' test data loaded')
 
     return x_train, y_train, x_test, y_test
@@ -49,7 +49,7 @@ def embed(embedding, x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarra
     #     plotter.xlabel = 'first feature'
     #     plotter.ylabel = 'second feature'
     #     plotter.title = 't-SNE'
-    #     plotter.scatter(x_train, y_train, class_labels=helpers.datasets.get_gene_name)
+    #     plotter.scatter(x_train, y_train, class_labels=helpers.datasets.get_voice_name)
 
     return x_train, x_test
 
@@ -86,7 +86,7 @@ def cluster(clustering, x: np.ndarray, embed_name: str) -> Tuple[np.ndarray, flo
 
 
 def show_prediction_info(x: np.ndarray, y_true: np.ndarray, y_predicted: dict, folder: str = 'results',
-                         filename: str = 'genes', extension: str = 'xlsx', sheet_name: str = 'results') -> None:
+                         filename: str = 'voice', extension: str = 'xlsx', sheet_name: str = 'results') -> None:
     """
     Shows information about the predicted data and saves them to an excel file.
 
@@ -128,19 +128,19 @@ def show_prediction_info(x: np.ndarray, y_true: np.ndarray, y_predicted: dict, f
 
 
 def run_embedding_test(x_train, y_train, x_test):
-    all_clusters, all_neighbors = [3, 5, 7], [5, 20, 100, 250]
+    all_clusters, all_neighbors = [2, 3, 4], [20, 50, 120, 300, 800]
     y_predicted: dict = {}
 
-    embedding_model = Isomap(n_neighbors=479, n_jobs=-1)
+    embedding_model = Isomap(n_neighbors=100, n_jobs=-1)
     isomap_x_train, isomap_x_test = embed(embedding_model, x_train, y_train, x_test)
 
     embedding_model = LocallyLinearEmbedding(n_neighbors=100, n_jobs=-1, random_state=0)
     lle_x_train, lle_x_test = embed(embedding_model, x_train, y_train, x_test)
 
-    embedding_model = SpectralEmbedding(affinity='nearest_neighbors', n_neighbors=100, n_jobs=-1, random_state=0)
+    embedding_model = SpectralEmbedding(n_neighbors=40, n_jobs=-1, random_state=0)
     se_x_train, se_x_test = embed(embedding_model, x_train, y_train, x_test)
 
-    embedding_model = TSNE(random_state=0)
+    embedding_model = TSNE(random_state=10)
     tsne_x_train, tsne_x_test = embed(embedding_model, x_train, y_train, x_test)
 
     for clusters in all_clusters:
