@@ -104,7 +104,7 @@ def cluster(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
         # Plot classes compared to clusters.
         plotter.subfolder = 'graphs/Spectral Clustering/classes'
-        plotter.scatter(x, y, clusters=clustering.labels_, class_labels=helpers.datasets.get_voice_name, linewidth=.1)
+        plotter.scatter(x, y, clusters=clustering.labels_, class_labels=helpers.datasets.get_voice_name, linewidth=.2)
 
     return clustering.labels_
 
