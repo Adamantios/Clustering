@@ -53,7 +53,7 @@ def preprocess(x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarray) -> 
 
     # Apply LLE.
     logger.log('\tApplying LLE with params:')
-    embedding = LocallyLinearEmbedding(n_neighbors=200, n_jobs=1, random_state=0)
+    embedding = LocallyLinearEmbedding(n_neighbors=100, n_jobs=-1, random_state=0)
     embedding_params = embedding.get_params()
     logger.log('\t' + str(embedding_params))
     x_train = embedding.fit_transform(x_train)
@@ -80,7 +80,7 @@ def cluster(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     :return: the clustering labels.
     """
     logger.log('Creating model...')
-    clustering = SpectralClustering(affinity='nearest_neighbors', n_clusters=2, n_neighbors=250, random_state=0,
+    clustering = SpectralClustering(affinity='nearest_neighbors', n_clusters=4, n_neighbors=20, random_state=0,
                                     n_jobs=-1)
     clustering_params = clustering.get_params()
     logger.log('Applying Spectral Clustering with params: \n{}'.format(clustering_params))
