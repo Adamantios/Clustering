@@ -2,8 +2,8 @@ import time
 import helpers
 import numpy as np
 from sklearn.cluster import SpectralClustering
-from sklearn.manifold import LocallyLinearEmbedding, Isomap, TSNE, MDS, SpectralEmbedding
-from sklearn import metrics, manifold
+from sklearn.manifold import LocallyLinearEmbedding
+from sklearn import metrics
 from definitions import SAVE_PRED_RESULTS, PLOTTING_MODE
 from typing import Tuple
 from sklearn.neighbors import KNeighborsClassifier
