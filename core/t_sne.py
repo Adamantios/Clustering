@@ -1,4 +1,5 @@
 from itertools import combinations
+from random import shuffle
 
 import numpy as np
 from sklearn import manifold
@@ -8,18 +9,18 @@ from helpers import Plotter
 
 
 class TSNE(object):
-    def __init__(self, n_components: int = 2, perplexity: int = 5, sigma: float = 1, epochs: int = 2000,
-                 learning_rate: int = 200, step_size: float = 0.1, mass: float = 0.9, min_gain: float = 1e-5,
-                 show_progress: bool = True, error_threshold: float = 1e-7):
+    def __init__(self, n_components: int = 2, perplexity: int = 5, sigma: float = 1, n_iter: int = 500,
+                 learning_rate: int = 200, step_size: float = 0.1, mass: float = 0.9, show_progress: bool = True,
+                 error_threshold: float = 1e-7, minibatch_size: int = 200):
+        self.minibatch_size = minibatch_size
         self.error_threshold = error_threshold
         self.show_progress = show_progress
         self.n_samples: int = 0
-        self.min_gain = min_gain
         self.n_components = max(n_components, 2)
         self.mass = self._check_mass(mass)
         self.step_size = step_size
         self.learning_rate = max(learning_rate, 100)
-        self.epochs = max(epochs, 1)
+        self.n_iter = max(n_iter, 1)
         self.sigma = sigma
         self.perplexity: int = perplexity
 
@@ -139,6 +140,27 @@ class TSNE(object):
 
         return cost
 
+    def get_minibatches(self, x: np.ndarray) -> np.ndarray:
+        """
+        Breaks the passed array to minibatches.
+
+        :param x: the array to be minibatched.
+        :return: array of minibatch arrays.
+        """
+        # Init a list for the minibatches.
+        minibatches = []
+        # Shuffle the passed array.
+        shuffle(x)
+
+        for i in range(0, x.shape[0], self.minibatch_size):
+            # Get a mini sample of the initial array, of size self.minibatch_size.
+            x_mini = x[i:i + self.minibatch_size]
+            # Add the mini sample to the list
+            minibatches.append(x_mini)
+
+        # Return the minibatches as a numpy array.
+        return np.asarray(minibatches)
+
     @staticmethod
     def _gradient(y: np.ndarray, p: np.ndarray, q: np.ndarray, i: int, j: int) -> float:
         """
@@ -155,33 +177,38 @@ class TSNE(object):
 
     def _sgd(self, y: np.ndarray, p: np.ndarray, q: np.ndarray) -> np.ndarray:
         """
-        Implements stochastic gradient descent with momentum, specialised for t-SNE.
+        Implements gradient descent with momentum, specialised for t-SNE.
 
         :param y: the samples in the final space.
         :param p: the original space's pairwise probabilities matrix.
         :param q: the final space's pairwise probabilities matrix.
         :return: the updated y.
         """
-        velocity = np.zeros(self.n_components)
-        for epoch in range(self.epochs):
-            for i in range(self.n_samples):
+        minibatches = self.get_minibatches(y)
+        velocity = np.zeros((self.minibatch_size, self.n_components, len(minibatches)))
+        for iteration in range(self.n_iter):
+            rand_idx = np.random.randint(0, len(minibatches))
+            y_mini = minibatches[rand_idx]
+
+            for i in range(y_mini.shape[0]):
                 gradient = 0
-                for j in range(self.n_samples):
-                    gradient += self._gradient(y, p, q, i, j)
+                for j in range(y_mini.shape[0]):
+                    if i == j: pass
+                    gradient += self._gradient(y_mini, p, q, i, j)
 
-                if np.linalg.norm(velocity - gradient) <= self.min_gain:
-                    break
+                gradient *= 4
 
-                velocity = self.mass * velocity - (1.0 - self.mass) * gradient * 4 * self.learning_rate
-                y = y + self.step_size * velocity
+                for coordinate in range(len(gradient)):
+                    velocity[i, coordinate, rand_idx] = self.mass * velocity[i, coordinate, rand_idx] - \
+                                                        (1.0 - self.mass) * coordinate * self.learning_rate
+                    y[i] = y[i] + self.step_size * velocity[i, coordinate, rand_idx]
 
             q = self._q(y)
-            error = self._kl_divergence(p, q)
-            # if np.abs(error) <= self.error_threshold:
-            #     break
 
-            if epoch % 100 == 0 and self.show_progress:
+            if iteration % 100 == 0 and self.show_progress:
+                error = self._kl_divergence(p, q)
                 print(error)
+                if np.abs(error) <= self.error_threshold: break
 
         return y
 
