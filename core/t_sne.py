@@ -144,26 +144,26 @@ class TSNE(object):
 
         return cost
 
-    def get_minibatches(self, x: np.ndarray) -> np.ndarray:
-        """
-        Breaks the passed array to minibatches.
-
-        :param x: the array to be minibatched.
-        :return: array of minibatch arrays.
-        """
-        # Init a list for the minibatches.
-        minibatches = []
-        # Shuffle the passed array.
-        shuffle(x)
-
-        for i in range(0, x.shape[0], self.minibatch_size):
-            # Get a mini sample of the initial array, of size self.minibatch_size.
-            x_mini = x[i:i + self.minibatch_size]
-            # Add the mini sample to the list
-            minibatches.append(x_mini)
-
-        # Return the minibatches as a numpy array.
-        return np.asarray(minibatches)
+    # def get_minibatches(self, x: np.ndarray) -> np.ndarray:
+    #     """
+    #     Breaks the passed array to minibatches.
+    #
+    #     :param x: the array to be minibatched.
+    #     :return: array of minibatch arrays.
+    #     """
+    #     # Init a list for the minibatches.
+    #     minibatches = []
+    #     # Shuffle the passed array.
+    #     shuffle(x)
+    #
+    #     for i in range(0, x.shape[0], self.minibatch_size):
+    #         # Get a mini sample of the initial array, of size self.minibatch_size.
+    #         x_mini = x[i:i + self.minibatch_size]
+    #         # Add the mini sample to the list
+    #         minibatches.append(x_mini)
+    #
+    #     # Return the minibatches as a numpy array.
+    #     return np.asarray(minibatches)
 
     @staticmethod
     def _gradient(y: np.ndarray, p: np.ndarray, q: np.ndarray, i: int, j: int) -> float:
@@ -179,40 +179,62 @@ class TSNE(object):
         """
         return (p[i, j] - q[i, j]) * (y[i] - y[j]) * (1 + np.linalg.norm(y[i] - y[j] ** 2)) ** -1
 
-    def _sgd(self, y: np.ndarray, p: np.ndarray, q: np.ndarray) -> np.ndarray:
+    # def _sgd(self, y: np.ndarray, p: np.ndarray, q: np.ndarray) -> np.ndarray:
+    #     """
+    #     Implements stochastic gradient descent with momentum, specialised for t-SNE.
+    #
+    #     :param y: the samples in the final space.
+    #     :param p: the original space's pairwise probabilities matrix.
+    #     :param q: the final space's pairwise probabilities matrix.
+    #     :return: the updated y.
+    #     """
+    #     velocity = np.zeros((self.minibatch_size, self.n_components, round(self.n_samples / self.minibatch_size)))
+    #     for iteration in range(self.n_iter):
+    #         minibatches = self.get_minibatches(y)
+    #         rand_idx = np.random.randint(0, len(minibatches))
+    #         y_mini = minibatches[rand_idx]
+    #
+    #         for i in range(y_mini.shape[0]):
+    #             gradient = 0
+    #             for j in range(y_mini.shape[0]):
+    #                 if i == j: pass
+    #                 gradient += self._gradient(y_mini, p, q, i, j)
+    #
+    #             gradient *= 4
+    #
+    #             for coordinate in range(len(gradient)):
+    #                 y[i] -= self.learning_rate * gradient + self.mass
+    #
+    #         q = self._q(y)
+    #
+    #         if iteration % 100 == 0 and self.show_progress:
+    #             error = self._kl_divergence(p, q)
+    #             print(error)
+    #             # if error <= self.error_threshold: break
+    #
+    #     return y
+
+    def _gradient_descent(self, y: np.ndarray, p: np.ndarray, q: np.ndarray) -> np.ndarray:
         """
-        Implements gradient descent with momentum, specialised for t-SNE.
+        Implements gradient descent, specialised for t-SNE.
 
         :param y: the samples in the final space.
         :param p: the original space's pairwise probabilities matrix.
         :param q: the final space's pairwise probabilities matrix.
         :return: the updated y.
         """
-        minibatches = self.get_minibatches(y)
-        velocity = np.zeros((self.minibatch_size, self.n_components, len(minibatches)))
+        history = np.zeros((p.shape[0], 2, y.shape[1]))
         for iteration in range(self.n_iter):
-            rand_idx = np.random.randint(0, len(minibatches))
-            y_mini = minibatches[rand_idx]
-
-            for i in range(y_mini.shape[0]):
-                gradient = 0
-                for j in range(y_mini.shape[0]):
-                    if i == j: pass
-                    gradient += self._gradient(y_mini, p, q, i, j)
-
-                gradient *= 4
-
-                for coordinate in range(len(gradient)):
-                    velocity[i, coordinate, rand_idx] = self.mass * velocity[i, coordinate, rand_idx] - \
-                                                        (1.0 - self.mass) * coordinate * self.learning_rate
-                    y[i] = y[i] + self.step_size * velocity[i, coordinate, rand_idx]
-
-            q = self._q(y)
-
-            if iteration % 100 == 0 and self.show_progress:
-                error = self._kl_divergence(p, q)
-                print(error)
-                if np.abs(error) <= self.error_threshold: break
+            for i in range(y.shape[0]):
+                sum_value = 0
+                for j in range(y.shape[0]):
+                    sum_value += self._gradient(y, p, q, i, j)
+                y[i] -= 4 * self.learning_rate * sum_value + self.mass * (history[i, 1] - history[i, 0])
+                history[i, 0] = history[i, 1]
+                history[i, 1] = y[i]
+            if iteration % 100 == 0:
+                q = self._q(y)
+                print(self._kl_divergence(p, q))
 
         return y
 
@@ -232,7 +254,7 @@ class TSNE(object):
         # Calculate q.
         q = self._q(y)
 
-        return self._sgd(y, p, q)
+        return self._gradient_descent(y, p, q)
 
 
 def main():
