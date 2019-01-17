@@ -69,10 +69,10 @@ class TSNE(object):
         if i == j:
             return 0
 
-        nominator = np.exp(-np.linalg.norm(x[i] - x[j]) ** 2 / 2 * self.sigma ** 2)
+        nominator = np.exp(-np.linalg.norm(x[i] - x[j]) ** 2 / (2 * self.sigma ** 2))
         denominator = 0
         for distance in self._k_neighbors_dists(x, i):
-            denominator += np.exp(distance ** 2 / 2 * self.sigma ** 2)
+            denominator += np.exp(distance ** 2 / (2 * self.sigma ** 2))
 
         return nominator / denominator
 
