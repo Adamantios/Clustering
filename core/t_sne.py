@@ -221,10 +221,10 @@ class TSNE(object):
         history = np.zeros((p.shape[0], 2, y.shape[1]))
         for iteration in range(self.n_iter):
             for i in range(y.shape[0]):
-                sum_value = 0
+                gradient = 0
                 for j in range(y.shape[0]):
-                    sum_value += self._gradient(y, p, q, i, j)
-                y[i] -= 4 * self.learning_rate * sum_value + self.mass * (history[i, 1] - history[i, 0])
+                    gradient += self._gradient(y, p, q, i, j)
+                y[i] -= 4 * self.learning_rate * gradient + self.mass * (history[i, 1] - history[i, 0])
                 history[i, 0] = history[i, 1]
                 history[i, 1] = y[i]
             if iteration % 100 == 0:
