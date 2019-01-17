@@ -90,7 +90,9 @@ class TSNE(object):
                 pij = self._pij(x, i, j)
                 pji = self._pij(x, j, i)
                 # Ensure that all the pairwise probabilities sum to 1.
-                p[i, j] = (pij + pji) / (2 * self.n_samples)
+                pair_value = (pij + pji) / (2 * self.n_samples)
+                p[i, j] = pair_value
+                p[j, i] = pair_value
         return p
 
     def _qij(self, y: np.ndarray, i: int, j: int) -> float:
@@ -124,6 +126,7 @@ class TSNE(object):
         for i, j in combinations(range(self.n_samples), 2):
             if i != j:
                 q[i, j] = self._qij(y, i, j)
+                q[j, i] = self._qij(y, j, i)
         return q
 
     def _kl_divergence(self, p: np.ndarray, q: np.ndarray) -> float:
@@ -136,8 +139,8 @@ class TSNE(object):
         """
         cost = 0
         for i, j in combinations(range(self.n_samples), 2):
-            if i != j:
-                cost += p[i, j] * np.log(p[i, j] / q[i, j])
+            if i < j and q[i, j] != 0 and p[i, j] != 0:
+                cost += p[i, j] * np.log(p[i, j] / q[i, j]) + p[j, i] * np.log(p[j, i] / q[j, i])
 
         return cost
 
