@@ -11,7 +11,8 @@ from helpers import Plotter
 class TSNE(object):
     def __init__(self, n_components: int = 2, perplexity: int = 5, sigma: float = 1, n_iter: int = 500,
                  learning_rate: int = 200, step_size: float = 0.1, mass: float = 0.9, show_progress: bool = True,
-                 error_threshold: float = 1e-7, minibatch_size: int = 200):
+                 error_threshold: float = 1e-7, minibatch_size: int = 200, random_state=0):
+        np.random.seed(random_state)
         self.minibatch_size = minibatch_size
         self.error_threshold = error_threshold
         self.show_progress = show_progress
