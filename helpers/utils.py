@@ -1,10 +1,12 @@
 import logging
 import logging.handlers
-import numpy as np
-import pandas
-from definitions import __OUT_PATH
 from datetime import datetime
 from os import path, makedirs
+
+import numpy as np
+import pandas
+
+from definitions import __OUT_PATH
 
 
 def create_folder(folder_name: str) -> str:

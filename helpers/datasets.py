@@ -1,8 +1,10 @@
-import numpy as np
 from pathlib import Path
 from typing import Tuple
+
+import numpy as np
 from pandas import read_csv, DataFrame
 from sklearn.model_selection import train_test_split
+
 from definitions import __GENES_TRAIN_PATH, __GENES_TEST_PATH, __GENES_DATA_PATH, __GENES_LABELS_PATH, __VOICE_PATH, \
     __VOICE_TRAIN_PATH, __VOICE_TEST_PATH
 
