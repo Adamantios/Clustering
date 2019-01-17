@@ -220,23 +220,22 @@ class TSNE(object):
         :param x: the samples to be transformed.
         :return: the samples transformed.
         """
+        # Store the number of samples.
         self.n_samples = x.shape[0]
+        # Calculate p.
+        p = self._p(x)
+        # Randomly initialize the new space y.
+        y = np.random.rand(self.n_samples, self.n_components)
+        # Calculate q.
+        q = self._q(y)
 
-        table_p = self._p(x)
-
-        y = np.random.rand(self.n_samples, 2)
-        y -= np.mean(y)
-        y /= np.std(y)
-        table_q = self._q(y)
-        return self._sgd(y, table_p, table_q)
+        return self._sgd(y, p, q)
 
 
 def main():
-    # I choose a dataset with two well separated part
-    x, y = make_classification(n_samples=10, random_state=0)
-
+    # Make a classification for testing.
+    x, y = make_classification(n_samples=10, n_features=200, random_state=0)
     plotter = Plotter()
-    plotter.scatter(x[:, :2], y)
 
     tsne = TSNE()
     x = tsne.fit_transform(x)
