@@ -1,11 +1,6 @@
 from itertools import combinations
 from random import shuffle
-
 import numpy as np
-from sklearn import manifold
-from sklearn.datasets import make_classification
-
-from helpers import Plotter
 
 
 class TSNE(object):
@@ -255,21 +250,3 @@ class TSNE(object):
         q = self._q(y)
 
         return self._gradient_descent(y, p, q)
-
-
-def main():
-    # Make a classification for testing.
-    x, y = make_classification(n_samples=10, n_features=200, random_state=0)
-    plotter = Plotter()
-
-    tsne = TSNE()
-    x = tsne.fit_transform(x)
-    plotter.scatter(x[:, :2], y)
-
-    tsne = manifold.TSNE()
-    x = tsne.fit_transform(x)
-    plotter.scatter(x[:, :2], y)
-
-
-if __name__ == '__main__':
-    main()
