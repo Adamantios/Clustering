@@ -139,8 +139,8 @@ class TSNE(object):
         """
         cost = 0
         for i, j in combinations(range(self.n_samples), 2):
-            if i < j and q[i, j] != 0 and p[i, j] != 0:
-                cost += p[i, j] * np.log(p[i, j] / q[i, j]) + p[j, i] * np.log(p[j, i] / q[j, i])
+            if i < j:
+                cost += p[i, j] * np.log(p[i, j] / q[i, j])
 
         return cost
 
